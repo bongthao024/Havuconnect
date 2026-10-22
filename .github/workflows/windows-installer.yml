@@ -1,0 +1,65 @@
+name: Build Windows application
+on:
+  push:
+    branches: [build/windows-installer]
+  workflow_dispatch:
+    inputs:
+      cloudflared_version:
+        description: Official cloudflare/cloudflared tag, or latest; exact digest is verified and recorded
+        default: latest
+        required: false
+        type: string
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: x64
+      - name: Download and verify official tunnel binary
+        id: tunnel
+        shell: pwsh
+        env:
+          TUNNEL_VERSION: ${{ inputs.cloudflared_version }}
+        run: |
+          $version = $env:TUNNEL_VERSION
+          if (-not $version) { $version = 'latest' }
+          if ($version -ne 'latest' -and $version -notmatch '^\d{4}\.\d+\.\d+$') { throw 'Invalid release tag' }
+          $suffix = if ($version -eq 'latest') { 'latest' } else { 'tags/' + $version }
+          $release = Invoke-RestMethod ('https://api.github.com/repos/cloudflare/cloudflared/releases/' + $suffix) -Headers @{ Accept='application/vnd.github+json'; 'User-Agent'='GPT-PC-Control-Builder' }
+          if ($release.tag_name -notmatch '^\d{4}\.\d+\.\d+$') { throw 'Invalid upstream release tag' }
+          $asset = @($release.assets | Where-Object name -eq 'cloudflared-windows-amd64.exe')
+          if ($asset.Count -ne 1 -or $asset[0].digest -notmatch '^sha256:[a-fA-F0-9]{64}$') { throw 'Official SHA256 unavailable; do not bypass verification' }
+          $expected = $asset[0].digest.Substring(7)
+          New-Item -ItemType Directory -Force .local/tools | Out-Null
+          $url = 'https://github.com/cloudflare/cloudflared/releases/download/' + $release.tag_name + '/cloudflared-windows-amd64.exe'
+          Invoke-WebRequest $url -OutFile .local/tools/cloudflared.exe
+          if ((Get-FileHash .local/tools/cloudflared.exe -Algorithm SHA256).Hash -ne $expected) { throw 'Checksum mismatch' }
+          Invoke-WebRequest ('https://raw.githubusercontent.com/cloudflare/cloudflared/' + $release.tag_name + '/LICENSE') -OutFile .local/tools/LICENSE-cloudflared.txt
+          @{ version=$release.tag_name; sha256=$expected; url=$url } | ConvertTo-Json | Set-Content .local/tunnel-manifest.json
+          'sha256=' + $expected | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+      - name: Ensure Inno Setup compiler
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) {
+            choco install innosetup --yes --no-progress
+            if ($LASTEXITCODE -ne 0) { throw 'Inno Setup install failed' }
+          }
+      - name: Build and test EXE and installer
+        shell: pwsh
+        env:
+          TUNNEL_SHA256: ${{ steps.tunnel.outputs.sha256 }}
+        run: ./scripts/build-windows.ps1 -CloudflaredPath "$PWD/.local/tools/cloudflared.exe" -CloudflaredSha256 $env:TUNNEL_SHA256 -CloudflaredLicensePath "$PWD/.local/tools/LICENSE-cloudflared.txt"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GPT-PC-Control-Windows-Setup
+          path: |
+            dist/installer/*
+            .local/packaged-smoke.json
+            .local/tunnel-manifest.json
+          if-no-files-found: error

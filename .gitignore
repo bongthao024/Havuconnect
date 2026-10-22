@@ -3,3 +3,7 @@ __pycache__/
 .pytest_cache/
 *.egg-info/
 .local/
+build/
+dist/
+*.spec
+desktop-smoke.json

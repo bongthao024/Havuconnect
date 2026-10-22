@@ -38,3 +38,10 @@ Chỉ sau khi hoàn tất checklist mới gọi bản này đã được nghiệ
 ## Nghiệm thu GPT Actions trên máy người dùng
 
 Theo docs/CHATGPT-ACTIONS.md. Chỉ đạt kết nối trực tiếp khi có đủ bằng chứng: GPT gọi submitPcTask thật; PC hiển thị nguồn ChatGPT Actions với đúng tham số; người dùng duyệt local; GPT gọi getPcTask và đọc đúng kết quả. Thử khóa sai phải bị từ chối, thử admin qua tunnel phải 404, dừng tunnel phải ngắt truy cập. Các bước này chưa thực hiện trong môi trường Linux hiện tại.
+
+## Bổ sung ứng dụng desktop và installer
+
+- Đã chạy `desktop_entry.py --self-test` trên Linux: agent HTTPS, Actions HTTPS, approval/result và Chromium đều đạt. Báo cáo `passed=true`, platform=linux.
+- Bộ pytest: 20 passed, 1 skipped. Bài native desktop bị skipped vì không có display; không tính là đã kiểm thử giao diện Windows.
+- Chưa chạy PyInstaller Windows, Inno Setup, file EXE hay cài/gỡ Windows. Chưa tạo artifact Setup.exe.
+- Cấu hình GitHub workflow đã chuẩn bị nhưng chưa đẩy/chạy. Metadata release Cloudflare qua API bị proxy cloud chặn 403; không dùng checksum tự đặt hoặc bỏ xác minh. Workflow Windows sẽ lấy và kiểm tra digest từ nguồn chính thức trước khi dùng binary.

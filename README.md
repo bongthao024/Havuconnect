@@ -4,7 +4,11 @@ Tác nhân PC cục bộ có giao diện tiếng Việt cho Windows 11, độc l
 
 Python + FastAPI + Playwright, mã nguồn mở MIT. Không cần server thuê, API AI trả phí hoặc tài khoản cloud để chạy. ChatGPT và API bên ngoài có thể có chính sách phí riêng; chương trình không tự gọi API AI.
 
-## Cài trên Windows 11
+## Bản ứng dụng Windows có bộ cài
+
+Đã bổ sung cửa sổ desktop tiếng Việt và quy trình tạo `GPT-PC-Control-Setup.exe`, có shortcut Desktop/Start Menu, không cần Python trên máy người dùng cuối. **Chưa có file EXE build thành công:** cần chạy workflow Windows và nghiệm thu trước khi bàn giao. Xem [trạng thái bộ cài và hướng dẫn build](docs/WINDOWS-APPLICATION.md). Chạy từ mã nguồn bằng `.venv/bin/python -m gpt_pc_control.desktop` khi có desktop/display.
+
+## Cài từ mã nguồn trên Windows 11
 
 Cài Python **3.12 x64** từ python.org, mở PowerShell bằng tài khoản thường (không Run as Administrator), tải mã nguồn và chuyển vào thư mục dự án:
 
