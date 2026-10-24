@@ -35,6 +35,8 @@ class DesktopRuntime:
         self.actions_enabled = False
         self.tunnel = None
         self.tunnel_timer = None
+        self.tunnel_thread = None
+        self._tunnel_lock = threading.RLock()
         self.public_url = ''
         self.tunnel_error = ''
         self.closed = False
@@ -57,12 +59,16 @@ class DesktopRuntime:
             raise RuntimeError(f'Không mở được cổng {port}. Hãy đóng phiên GPT PC Control đang chạy rồi thử lại.')
 
     def start(self):
-        if self.closed:
-            raise RuntimeError('Phiên đã đóng')
+        self._require_open()
         self._start(create_app(self.data_dir, self.admin, self.worker), 8765)
         self.request('GET', '/api/status')
 
+    def _require_open(self):
+        if self.closed:
+            raise RuntimeError('Phiên đã đóng')
+
     def request(self, method, path, body=None):
+        self._require_open()
         with httpx.Client(base_url='https://127.0.0.1:8765', verify=self.context,
                           trust_env=False, timeout=30) as client:
             response = client.request(method, path, json=body,
@@ -72,11 +78,13 @@ class DesktopRuntime:
             return response.json()
 
     def enable_actions(self):
+        self._require_open()
         if not self.actions_enabled:
             self._start(create_gateway(self.actions_key, self.worker, self.cert), 8766)
             self.actions_enabled = True
 
     def start_tunnel(self, executable):
+        self._require_open()
         if not self.actions_enabled:
             raise RuntimeError('Hãy bật gateway GPT Actions trước')
         if self.tunnel and self.tunnel.poll() is None:
@@ -92,9 +100,11 @@ class DesktopRuntime:
         process = self.tunnel
 
         def timeout():
-            if self.tunnel is process and not self.closed and not self.public_url and process.poll() is None:
-                self.tunnel_error = 'Tunnel chưa kết nối sau 60 giây. Kiểm tra mạng rồi thử lại.'
-                process.terminate()
+            with self._tunnel_lock:
+                if self.tunnel is process and not self.closed and not self.public_url and process.poll() is None:
+                    self.tunnel_error = 'Tunnel chưa kết nối sau 60 giây. Kiểm tra mạng rồi thử lại.'
+                    # A timed-out tunnel must not remain connected in the background.
+                    self._stop_process(process)
 
         self.tunnel_timer = threading.Timer(60, timeout)
         self.tunnel_timer.daemon = True
@@ -105,31 +115,56 @@ class DesktopRuntime:
             try:
                 for line in process.stdout:
                     match = re.search(r'https://[a-z0-9-]+\.trycloudflare\.com\b', line)
-                    if match and self.tunnel is process and not self.closed:
-                        self.public_url = match.group(0)
-                        timer.cancel()
+                    with self._tunnel_lock:
+                        if match and self.tunnel is process and not self.closed:
+                            self.public_url = match.group(0)
+                            timer.cancel()
                 process.wait()
-                if not self.closed and not self.tunnel_error and self.tunnel is process:
-                    self.tunnel_error = 'Tunnel đã dừng. Bấm kết nối lại và cập nhật URL trong GPT.'
-                    self.public_url = ''
+                with self._tunnel_lock:
+                    if not self.closed and not self.tunnel_error and self.tunnel is process:
+                        self.tunnel_error = 'Tunnel đã dừng. Bấm kết nối lại và cập nhật URL trong GPT.'
+                        self.public_url = ''
             finally:
+                timer.cancel()
                 process.stdout.close()
-        threading.Thread(target=monitor, daemon=True).start()
+        self.tunnel_thread = threading.Thread(target=monitor, daemon=True)
+        self.tunnel_thread.start()
 
-    def stop_tunnel(self):
-        if self.tunnel_timer:
-            self.tunnel_timer.cancel()
-        process, self.tunnel = self.tunnel, None
-        self.public_url = ''
+    @staticmethod
+    def _stop_process(process):
         if process and process.poll() is None:
-            process.terminate()
+            try:
+                process.terminate()
+            except OSError:
+                if process.poll() is None:
+                    raise
             try:
                 process.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 process.kill()
                 process.wait(timeout=5)
 
+    def stop_tunnel(self):
+        with self._tunnel_lock:
+            if self.tunnel_timer:
+                self.tunnel_timer.cancel()
+            process, self.tunnel = self.tunnel, None
+            thread, self.tunnel_thread = self.tunnel_thread, None
+            self.public_url = ''
+            self.tunnel_error = ''
+        try:
+            self._stop_process(process)
+        except Exception:
+            # Preserve ownership so another close attempt can still stop this process.
+            with self._tunnel_lock:
+                self.tunnel = process
+                self.tunnel_thread = thread
+            raise
+        if thread and thread is not threading.current_thread():
+            thread.join(2)
+
     def export_schema(self, path):
+        self._require_open()
         if not self.public_url:
             raise RuntimeError('Tunnel chưa có URL công khai')
         import json
@@ -137,11 +172,19 @@ class DesktopRuntime:
 
     def close(self):
         self.closed = True
-        self.stop_tunnel()
+        tunnel_error = None
+        try:
+            self.stop_tunnel()
+        except Exception as error:
+            tunnel_error = error
+        # A tunnel failure must not prevent stopping the local services.
         for instance, _ in self.servers:
             instance.should_exit = True
         for _, thread in reversed(self.servers):
             thread.join(10)
         if any(thread.is_alive() for _, thread in self.servers):
             raise RuntimeError('Dịch vụ chưa dừng xong; đóng ứng dụng và kiểm tra tiến trình trước khi chạy lại.')
+        self.actions_enabled = False
+        if tunnel_error:
+            raise tunnel_error
         self.temp.cleanup()

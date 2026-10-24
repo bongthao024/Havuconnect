@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kết nối GPT PC Control</title>
+<style>body{font:17px/1.65 'Segoe UI',sans-serif;background:#101827;color:#e5eef9;margin:0}main{max-width:850px;margin:40px auto;padding:0 25px}h1,h2{color:#77e0c5}section{background:#1b283d;padding:20px 28px;border-radius:12px;margin:20px 0}strong{color:white}li{margin:12px 0}code{color:#77e0c5}a{color:#85d7ff}</style></head><body><main>
+<h1>Ra lệnh trên ChatGPT, thực hiện trên PC</h1>
+<p>Hướng dẫn cho bản thử nghiệm GPT PC Control V1.0. Ứng dụng cần đang mở trên chính máy Windows anh muốn điều khiển.</p>
+<section><h2>1. Kết nối ứng dụng</h2><ol>
+<li>Mở tab <strong>Kết nối ChatGPT</strong>, bấm <strong>Bật GPT Actions</strong>.</li>
+<li>Bấm <strong>Kết nối Internet bằng Cloudflare</strong> và xác nhận. Chờ xuất hiện địa chỉ <code>https://…trycloudflare.com</code>.</li>
+<li>Bấm <strong>Lưu schema cho GPT…</strong> và lưu tệp JSON ở nơi dễ tìm, ví dụ Desktop.</li></ol>
+<p>Nếu mạng chặn Cloudflare, ứng dụng sẽ báo lỗi. Không tắt phần mềm bảo vệ hoặc kiểm tra chứng chỉ để vượt lỗi.</p></section>
+<section><h2>2. Cấu hình GPT riêng</h2><ol>
+<li>Mở <a href="https://chatgpt.com/gpts/editor" target="_blank" rel="noopener noreferrer">trình tạo GPT của ChatGPT</a>. Tài khoản của anh cần có quyền tạo GPT và dùng Actions.</li>
+<li>Trong <strong>Configure / Cấu hình</strong>, đặt tên GPT là <strong>GPT PC Control</strong>.</li>
+<li>Quay lại ứng dụng, bấm <strong>Sao chép hướng dẫn cho GPT</strong>, dán vào ô <strong>Instructions</strong> của GPT.</li>
+<li>Chọn <strong>Actions → Create new action</strong>. Mở tệp JSON đã lưu, sao chép toàn bộ nội dung và dán vào <strong>Schema</strong>.</li>
+<li>Trong <strong>Authentication</strong>, chọn <strong>API Key → Bearer</strong>. Bấm <strong>Sao chép khóa Actions</strong> trong ứng dụng, dán vào ô khóa này. <strong>Không dán khóa vào nội dung chat.</strong></li>
+<li>Lưu GPT với quyền <strong>Only me / Chỉ mình tôi</strong>.</li></ol></section>
+<section><h2>3. Gửi và duyệt nhiệm vụ</h2><ol>
+<li>Mở GPT vừa tạo và nói: <strong>“Kiểm tra phiên bản Python trên máy tính của anh.”</strong></li>
+<li>GPT gửi nhiệm vụ. Trên ứng dụng, vào <strong>Nhiệm vụ</strong>, chọn đúng nhiệm vụ và đọc kỹ tham số.</li>
+<li>Bấm <strong>Duyệt và thực hiện</strong>. Sau đó nói trong GPT: <strong>“Kiểm tra kết quả nhiệm vụ vừa rồi.”</strong></li></ol>
+<p>Cũng có thể hỏi tên máy, người dùng hiện tại, danh sách tiến trình hoặc đọc một tệp UTF-8. Trước khi đọc tệp, dùng tab <strong>Quyền thư mục</strong> để chọn thư mục cụ thể và cấp quyền.</p></section>
+<section><h2>Phạm vi và lưu ý</h2><p>Đây chưa phải công cụ điều khiển chuột/bàn phím hoặc shell toàn quyền. Trình duyệt hiện chỉ thử lấy tiêu đề <code>https://example.org</code>. Chưa tự phân loại ảnh công trình hay truy cập Facebook.</p>
+<p>Mọi việc cần được anh duyệt trên PC. Kết quả từ nhiệm vụ Actions sẽ đi qua Cloudflare và ChatGPT. Chỉ duyệt dữ liệu anh muốn chia sẻ. Tunnel không bắt buộc mua tên miền; tính năng GPT/Actions phụ thuộc tài khoản ChatGPT.</p>
+<p>Đóng ứng dụng sẽ ngắt kết nối. Lần mở sau khóa và URL thử nghiệm thay đổi: cần xuất schema và cập nhật khóa trong GPT. Không chia sẻ GPT hoặc khóa với người khác.</p></section>
+</main></body></html>

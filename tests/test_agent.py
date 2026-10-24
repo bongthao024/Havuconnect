@@ -88,3 +88,15 @@ def test_ui(client):
     assert 'GPT PC Control' in client.get('/').text
     assert "default-src 'self'" in client.get('/').headers['content-security-policy']
     assert client.get('/ui.js').status_code == 200
+
+
+def test_packaged_python_version_does_not_launch_gui(client, monkeypatch):
+    import sys
+    import subprocess
+    monkeypatch.setattr(sys, 'frozen', True, raising=False)
+    def forbidden(*args, **kwargs):
+        raise AssertionError('Frozen GUI must not spawn itself as Python')
+    monkeypatch.setattr(subprocess, 'run', forbidden)
+    result = approve(client, submit(client, 'run_command', command='python_version')).json()
+    assert result['state'] == 'completed'
+    assert result['result'] == {'exit_code': 0, 'stdout': 'Python ' + sys.version.split()[0] + '\n'}

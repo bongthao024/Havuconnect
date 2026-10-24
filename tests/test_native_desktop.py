@@ -1,5 +1,6 @@
 """Native window workflow: runs on Windows CI, skips when no display is available."""
 import time
+import sys
 import tkinter as tk
 
 import httpx
@@ -9,7 +10,9 @@ import pytest
 def test_native_window_approval_and_folder_grant(tmp_path, monkeypatch):
     try:
         root = tk.Tk()
-    except tk.TclError:
+    except tk.TclError as error:
+        if sys.platform == 'win32':
+            pytest.fail('Windows build must exercise the native window: ' + str(error))
         pytest.skip('Không có desktop/display; cần chạy bài cửa sổ trên Windows')
     from gpt_pc_control.desktop import DesktopApp
     from gpt_pc_control.desktop_runtime import DesktopRuntime

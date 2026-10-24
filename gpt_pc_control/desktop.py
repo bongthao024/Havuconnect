@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import queue
 import shutil
+import webbrowser
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
@@ -59,6 +60,7 @@ class DesktopApp:
         self.url = tk.StringVar(value='Chưa có kết nối Internet')
         ttk.Entry(connect, textvariable=self.url, width=85, state='readonly').pack(anchor='w', pady=5)
         ttk.Button(connect, text='3. Lưu schema cho GPT…', command=self.export_schema).pack(anchor='w', pady=8)
+        ttk.Button(connect, text='Mở hướng dẫn kết nối từng bước', command=self.open_help).pack(anchor='w', pady=5)
         ttk.Button(connect, text='Sao chép hướng dẫn cho GPT', command=self.copy_instructions).pack(anchor='w', pady=5)
         ttk.Button(connect, text='Ngắt kết nối Internet', command=self.disconnect).pack(anchor='w', pady=5)
         ttk.Label(connect, text='Kết quả duyệt sẽ đi qua Cloudflare và ChatGPT. Khóa và địa chỉ thử nghiệm đổi khi khởi động lại. Không chia sẻ GPT với người khác.', wraplength=850).pack(anchor='w', pady=12)
@@ -68,27 +70,28 @@ class DesktopApp:
         root.after(3000, self.poll)
         self.work(self.runtime.start, self.started)
 
-    def work(self, function, success=None):
+    def work(self, function, success=None, *, show_error=True):
         if self.closing:
             return
         def done(future):
             try:
                 value = future.result()
-                self.events.put((success, value, None))
+                self.events.put((success, value, None, show_error))
             except Exception as error:
-                self.events.put((None, None, str(error)))
+                self.events.put((None, None, str(error), show_error))
         self.executor.submit(function).add_done_callback(done)
 
     def tick(self):
         while True:
             try:
-                callback, result, error = self.events.get_nowait()
+                callback, result, error, show_error = self.events.get_nowait()
             except queue.Empty:
                 break
             if error:
                 self.busy = False
                 self.status.set(error)
-                messagebox.showerror('GPT PC Control', error, parent=self.root)
+                if show_error and not self.closing:
+                    messagebox.showerror('GPT PC Control', error, parent=self.root)
             elif callback:
                 callback(result)
         if self.runtime.tunnel_error:
@@ -109,7 +112,9 @@ class DesktopApp:
         self.busy = True
         def fetch():
             return self.runtime.request('GET','/api/tasks'), self.runtime.request('GET','/api/status')
-        self.work(fetch, self.render)
+        # Polling failures remain visible in the status line without repeatedly
+        # interrupting the user with a modal dialog every three seconds.
+        self.work(fetch, self.render, show_error=False)
 
     def poll(self):
         if not self.closing:
@@ -212,6 +217,10 @@ class DesktopApp:
                 self.root.clipboard_clear()
         except tk.TclError:
             pass
+
+    def open_help(self):
+        path = Path(__file__).parent / 'static' / 'desktop-help.html'
+        webbrowser.open(path.resolve().as_uri())
 
     def copy_instructions(self):
         path = bundle_root() / 'integrations' / 'GPT-INSTRUCTIONS.txt'

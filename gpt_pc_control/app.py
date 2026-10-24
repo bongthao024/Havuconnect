@@ -100,6 +100,9 @@ def create_app(data_dir=None, admin_token=None, task_token=None):
             # Fixed executable and arguments: no shell, PATH search, scripts or user arguments.
             name = task.args.get('command')
             if name == 'python_version':
+                if getattr(sys, 'frozen', False):
+                    # In a packaged build sys.executable is our GUI, not python.exe.
+                    return {'exit_code': 0, 'stdout': 'Python ' + sys.version.split()[0] + '\n'}
                 command = [sys.executable, '--version']
             elif name in {'whoami', 'hostname', 'list_processes'} and sys.platform == 'win32':
                 system32 = Path(os.environ.get('SystemRoot', r'C:\Windows')) / 'System32'
@@ -109,7 +112,8 @@ def create_app(data_dir=None, admin_token=None, task_token=None):
             else:
                 raise ValueError('Lệnh chưa được cho phép hoặc cần Windows 11')
             result = await asyncio.to_thread(subprocess.run, command,
-                                             capture_output=True, text=True, errors='replace', timeout=10, shell=False)
+                                             capture_output=True, text=True, errors='replace', timeout=10, shell=False,
+                                             creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0)
             return {'exit_code': result.returncode, 'stdout': result.stdout[:4096]}
         if task.action == 'browser_title':
             url = task.args['url']

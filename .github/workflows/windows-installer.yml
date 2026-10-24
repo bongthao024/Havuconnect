@@ -55,11 +55,41 @@ jobs:
         env:
           TUNNEL_SHA256: ${{ steps.tunnel.outputs.sha256 }}
         run: ./scripts/build-windows.ps1 -CloudflaredPath "$PWD/.local/tools/cloudflared.exe" -CloudflaredSha256 $env:TUNNEL_SHA256 -CloudflaredLicensePath "$PWD/.local/tools/LICENSE-cloudflared.txt"
+      - name: Report verification evidence
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path .local/pytest-results.xml) {
+            [xml]$tests = Get-Content .local/pytest-results.xml -Raw
+            $cases = @($tests.SelectNodes('//testcase'))
+            $skipped = @($tests.SelectNodes('//testcase/skipped')).Count
+            $failed = @($tests.SelectNodes('//testcase/failure | //testcase/error')).Count
+            Write-Output "::notice title=Windows tests::tests=$($cases.Count); skipped=$skipped; failed=$failed"
+          }
+          foreach ($name in @('packaged-smoke', 'installed-smoke', 'installer-smoke')) {
+            $path = '.local/' + $name + '.json'
+            if (Test-Path $path) {
+              $report = Get-Content $path -Raw | ConvertFrom-Json
+              $checks = $report.checks -join ','
+              Write-Output "::notice title=$name::passed=$($report.passed); platform=$($report.platform); checks=$checks; install_exit=$($report.install_exit); uninstall_exit=$($report.uninstall_exit)"
+              if (-not $report.passed) {
+                $message = @($report.error, $report.test_error, $report.cleanup_error) -join ' '
+                $message = $message.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+                Write-Output "::error title=$name::$message"
+              }
+            }
+          }
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: GPT-PC-Control-Windows-Setup
           path: |
             dist/installer/*
             .local/packaged-smoke.json
+            .local/installed-smoke.json
+            .local/installer-smoke.json
+            .local/installer-setup.log
+            .local/installer-uninstall.log
+            .local/pytest-results.xml
             .local/tunnel-manifest.json
           if-no-files-found: error

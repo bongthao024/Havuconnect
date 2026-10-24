@@ -6,7 +6,7 @@ Python + FastAPI + Playwright, mã nguồn mở MIT. Không cần server thuê, 
 
 ## Bản ứng dụng Windows có bộ cài
 
-Đã bổ sung cửa sổ desktop tiếng Việt và quy trình tạo `GPT-PC-Control-Setup.exe`, có shortcut Desktop/Start Menu, không cần Python trên máy người dùng cuối. **Chưa có file EXE build thành công:** cần chạy workflow Windows và nghiệm thu trước khi bàn giao. Xem [trạng thái bộ cài và hướng dẫn build](docs/WINDOWS-APPLICATION.md). Chạy từ mã nguồn bằng `.venv/bin/python -m gpt_pc_control.desktop` khi có desktop/display.
+Đã bổ sung cửa sổ desktop tiếng Việt và quy trình tạo `GPT-PC-Control-Setup.exe`, có shortcut Desktop/Start Menu, không cần Python trên máy người dùng cuối. **Đã có build Windows thành công** trên GitHub Actions. Lấy bản mới nhất có trạng thái thành công tại [Build Windows application](https://github.com/bongthao024/Havuconnect/actions/workflows/windows-installer.yml), tải artifact **GPT-PC-Control-Windows-Setup**, giải nén rồi mở `GPT-PC-Control-Setup.exe`. Đây là bản thử nghiệm, còn cần nghiệm thu trên PC Windows 11 của người dùng. Xem [trạng thái bộ cài và hướng dẫn build](docs/WINDOWS-APPLICATION.md). Trong cửa sổ ứng dụng có nút **Mở hướng dẫn kết nối từng bước**, giúp cấu hình GPT mà không phải chạy lệnh. Chạy từ mã nguồn bằng `.venv/bin/python -m gpt_pc_control.desktop` khi có desktop/display.
 
 ## Cài từ mã nguồn trên Windows 11
 
