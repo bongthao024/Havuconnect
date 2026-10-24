@@ -86,6 +86,7 @@ jobs:
         if: always()
         with:
           name: GPT-PC-Control-Windows-Setup
+          include-hidden-files: true
           path: |
             dist/installer/*
             .local/packaged-smoke.json
