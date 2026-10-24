@@ -9,6 +9,9 @@ on:
         default: latest
         required: false
         type: string
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
@@ -71,11 +74,11 @@ jobs:
             if (Test-Path $path) {
               $report = Get-Content $path -Raw | ConvertFrom-Json
               $checks = $report.checks -join ','
-              Write-Output "::notice title=$name::passed=$($report.passed); platform=$($report.platform); checks=$checks; install_exit=$($report.install_exit); uninstall_exit=$($report.uninstall_exit)"
+              Write-Output "::notice title=${name}::passed=$($report.passed); platform=$($report.platform); checks=$checks; install_exit=$($report.install_exit); uninstall_exit=$($report.uninstall_exit)"
               if (-not $report.passed) {
                 $message = @($report.error, $report.test_error, $report.cleanup_error) -join ' '
                 $message = $message.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
-                Write-Output "::error title=$name::$message"
+                Write-Output "::error title=${name}::$message"
               }
             }
           }
