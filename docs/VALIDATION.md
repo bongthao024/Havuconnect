@@ -4,6 +4,17 @@ Cập nhật ngày 24/10/2026.
 
 ## Trạng thái mới nhất
 
+**Build bản cập nhật đã thành công:** [run 40060639913](https://github.com/bongthao024/Havuconnect/actions/runs/40060639913), commit ứng dụng `692b1f5`, ngày 24/10/2026. [Tải artifact Windows](https://github.com/bongthao024/Havuconnect/actions/runs/40060639913/artifacts/12547685709) (cần đăng nhập GitHub).
+
+Bằng chứng từ annotations của job build trên GitHub:
+
+- Windows pytest: **25 tests, 0 skipped, 0 failed**, bao gồm cửa sổ native.
+- `packaged-smoke` và `installed-smoke`: `passed=True`, platform `win32`. Mỗi bản đạt 9 kiểm tra: agent HTTPS, Actions HTTPS, phê duyệt, kết quả, python_version, whoami, hostname, list_processes và Chromium.
+- `installer-smoke`: `passed=True`, mã thoát cài đặt 0, mã thoát gỡ cài đặt 0.
+- Artifact `GPT-PC-Control-Windows-Setup`, ID `12547685709`, dung lượng 297.204.024 byte. SHA256 của ZIP artifact: `d48a87161263a8e6f0a133b287e7631d4c20ca6d178091623b3d206b77fece28` (khác SHA256 của riêng Setup.exe trong file SHA256.txt).
+- Có cảnh báo deprecation runtime Node của các action v4; không có test bị bỏ qua hoặc thất bại trên Windows. Chưa chạy trên PC cá nhân/Windows 11 sạch hoặc kết nối GPT thật.
+
+
 - Lần build Windows đầu tiên [39719856644](https://github.com/bongthao024/Havuconnect/actions/runs/39719856644) của commit `2ca1aa3` đã thành công và tạo artifact bộ cài. Các bước pytest, PyInstaller, EXE smoke và Inno Setup đều hoàn thành thành công theo API GitHub Actions.
 - Bản cập nhật sửa chẩn đoán Python trong EXE (không gọi lại GUI), xử lý đóng/timeout tunnel và lỗi hiển thị. Linux: **24 passed, 1 skipped**, 1 cảnh báo deprecation TestClient/httpx. Bài native desktop bị skipped vì Linux không có display; trên Windows giờ bắt buộc chạy, không cho skip vì thiếu cửa sổ.
 - Source desktop smoke trên Linux đạt: agent HTTPS, Actions HTTPS, approval, result, Python diagnostic và Chromium.

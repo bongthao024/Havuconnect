@@ -4,6 +4,11 @@ Mục tiêu bàn giao là **GPT-PC-Control-Setup.exe**, không phải file ZIP m
 
 ## Trạng thái thực tế
 
+**Bản cập nhật đã build và kiểm thử trên Windows thành công ngày 24/10/2026:** [run 40060639913](https://github.com/bongthao024/Havuconnect/actions/runs/40060639913). [Tải bộ cài trong artifact](https://github.com/bongthao024/Havuconnect/actions/runs/40060639913/artifacts/12547685709), đăng nhập GitHub trước khi tải. Giải nén ZIP, mở `dist/installer/GPT-PC-Control-Setup.exe`.
+
+25/25 bài kiểm thử Windows đạt, không skipped; bản EXE và bản đã cài đều đạt 9 smoke checks. Cài đặt và gỡ tự động đều exit 0. Đây là kiểm thử trên máy Windows của GitHub, **không phải nghiệm thu trên PC của người dùng hoặc với GPT thật**. Bản cài chưa có chữ ký Authenticode.
+
+
 Đã có build Windows thành công ngày 22/10/2026 trên GitHub Actions: [run 39719856644](https://github.com/bongthao024/Havuconnect/actions/runs/39719856644), commit `2ca1aa3`. Quy trình đã tạo artifact bộ cài và chạy kiểm tra EXE. Bản cập nhật ngày 24/10 bổ sung sửa lỗi frozen runtime, kiểm tra các lệnh Windows và kiểm thử cài/gỡ tự động; chỉ dùng artifact của lần chạy mới đã thành công. Xem [danh sách build](https://github.com/bongthao024/Havuconnect/actions/workflows/windows-installer.yml). **Chưa nghiệm thu trên máy Windows 11 cá nhân của người dùng hoặc với GPT thật.**
 
 24 kiểm thử hiện có đạt trên Linux, 1 bài cửa sổ bị bỏ qua vì không có display. Bài kiểm thử cửa sổ native được bỏ qua trên Linux không có display; được cấu hình chạy trên Windows CI. Lệnh tự kiểm tra desktop runtime đã thực chạy trên Linux, xác minh server HTTPS, gateway Actions HTTPS, phê duyệt/kết quả và Chromium. Kết quả này riêng cho môi trường Linux; báo cáo EXE/Windows nằm trong artifact của lần chạy Windows.
