@@ -78,7 +78,7 @@ Xem [kết quả đã chạy và checklist Windows](docs/VALIDATION.md), [thiế
 
 Nhật ký JSONL ở `%USERPROFILE%\.gpt-pc-control\audit.jsonl`; có thể đổi thư mục bằng biến `GPT_PC_DATA` trước khi chạy. Nhật ký chứa thời gian, quyết định, ID, hành động và đường dẫn cấp quyền; không chứa khóa hay nội dung tệp/kết quả. Nhật ký cục bộ chưa chống sửa đổi và cần được quản lý dung lượng. Chỉ sử dụng tài khoản Windows cá nhân và thư mục dữ liệu có ACL riêng. Tài khoản cùng quyền có thể sửa log và bộ nhớ tiến trình: phần mềm không thay thế ranh giới bảo mật của Windows.
 
-Gỡ bỏ: Ctrl+C, xóa thư mục mã nguồn/venv và thư mục dữ liệu nếu không cần giữ log. Không cài service, mở firewall hay cấu hình autorun.
+Gỡ bản đã cài: đóng ứng dụng rồi vào **Settings → Apps → GPT PC Control → Uninstall**. Gỡ bản chạy từ mã nguồn: Ctrl+C rồi xóa thư mục mã nguồn/venv. Với cả hai cách, chủ động xóa thư mục dữ liệu nếu không cần giữ log. Ứng dụng không cài service, mở firewall hay cấu hình autorun.
 
 ## Phát triển trên Linux
 

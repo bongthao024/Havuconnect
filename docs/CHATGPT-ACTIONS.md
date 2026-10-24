@@ -6,7 +6,13 @@ Chế độ Actions dùng luồng:
 
 Không phải dán JSON cho từng nhiệm vụ. Cần cấu hình GPT một lần cho mỗi phiên tunnel thử nghiệm. Cuộc chat đang viết mã này không tự nhận được công cụ mới; phải mở GPT riêng đã cấu hình Actions.
 
-## 1. Chuẩn bị PC Windows 11
+## Nếu đã cài bằng GPT-PC-Control-Setup.exe
+
+Không cần cài Python, chạy PowerShell, dùng winget hoặc cài cloudflared riêng. Mở ứng dụng từ Desktop/Start Menu, vào tab **Kết nối ChatGPT**, bấm **Mở hướng dẫn kết nối từng bước**. Ứng dụng có sẵn các nút bật gateway/tunnel, sao chép khóa và xuất schema. Xem [hướng dẫn bản ứng dụng Windows](WINDOWS-APPLICATION.md). Cấu hình GPT Builder theo mục 4–5 bên dưới, lấy schema/khóa qua các nút trong ứng dụng.
+
+**Các lệnh terminal ở mục 1–3 bên dưới chỉ dành cho chạy từ mã nguồn**, không dành cho người đã dùng bộ cài EXE.
+
+## 1. Chuẩn bị PC Windows 11 khi chạy mã nguồn
 
 Cài Python 3.12 x64 và chạy `scripts/setup.ps1` theo README. Cài công cụ tunnel mã nguồn mở bằng PowerShell:
 
